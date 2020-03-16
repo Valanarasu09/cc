@@ -1,0 +1,116 @@
+# cc
+import java.util.*;
+import java.sql.*;
+import java.io.*;
+
+public class ElectricityBoard {
+
+    public void addBill(List<ElectricityBill> billList) throws ClassNotFoundException, Exception
+    {
+    	int ri = 0,c = 0;
+    	DBHandler dbh = null;
+		Connection myConn = null;
+		PreparedStatement myStmt  = null;
+		ResultSet myRs = null;
+		String consumerNumber;
+	    String consumerName;
+	    String consumerAddress;
+	    int unitsConsumed;
+	    double billAmount;
+	    try
+	    {
+	    	dbh = new DBHandler();
+			myConn = dbh.establishConnection();
+			String q = "insert into ElectricityBill values(?,?,?,?,?);";
+			myStmt  = myConn.prepareStatement(q);
+			try {
+		    for (ElectricityBill temp : billList) 
+		    {
+		    	try
+				{			
+		    		myStmt.setString(1, temp.getConsumerNumber());
+		    		myStmt.setString(2, temp.getConsumerName());
+		    		myStmt.setString(3, temp.getConsumerAddress());
+		    		myStmt.setInt(4, temp.getUnitsConsumed());
+		    		myStmt.setDouble(5, temp.getBillAmount());			
+		    		myStmt.executeUpdate();
+		    		c++;
+				}
+		    	catch(Exception e)
+		    	{
+		    		
+		    	}
+		    }
+		    System.out.println(c+" number of records inserted");
+			}
+			finally
+			{
+				myConn.close();
+			}
+	    }
+	    catch(SQLException se)
+	    {
+	    	System.out.println(se);
+	    }
+	    catch(Exception e)
+	    {
+	    	System.out.println(e);
+	    }
+	    
+    }
+    
+    public List<ElectricityBill> generateBill(String filePath) throws IOException
+    {
+    	BufferedReader br = new BufferedReader(new FileReader(filePath));
+    	String consumerNumber,consumerName,consumerAddress;
+    	int unitsConsumed;
+    	List<ElectricityBill> bill = new ArrayList<ElectricityBill>();
+    	ElectricityBill ebi;
+    	String eachLine = br.readLine();
+    	while(eachLine!=null)
+    	{
+    		String line[] = eachLine.split(",");
+    		consumerNumber = line[0];
+    		consumerName = line[1];
+    		consumerAddress = line[2];
+    		unitsConsumed = Integer.parseInt(line[3]);
+    		try
+    		{
+    			if(validate(consumerNumber))
+    			{
+    				ebi = new ElectricityBill();
+    				ebi.setConsumerNumber(consumerNumber);
+    				ebi.setConsumerName(consumerName);
+    				ebi.setConsumerAddress(consumerAddress);
+    				ebi.setUnitsConsumed(unitsConsumed);
+    				ebi.calculateBillAmount();
+    				bill.add(ebi);
+    				
+    				
+    				System.out.println(ebi.getConsumerNumber()+" "+ebi.getConsumerName()+" "+ebi.getConsumerAddress()+" "+ebi.getUnitsConsumed()+" "+ebi.getBillAmount());
+    				
+    				
+    			}
+    			
+    		}
+    		catch(InvalidConsumerNumberException icne)
+    		{
+    			System.out.println(icne.getMessage());
+    		}
+    		eachLine = br.readLine();
+    	}
+    	return bill;
+    }
+    
+    public boolean validate(String consumerNumber) throws InvalidConsumerNumberException {
+    	
+    	if(consumerNumber.matches("[0]{1}[0-9]{9}"))
+    	{
+    		return true;
+    	}
+    	else
+    	{
+    		throw new InvalidConsumerNumberException("Invalid Consumer Number");
+    	}
+    }
+}
