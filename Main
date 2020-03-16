@@ -1,0 +1,16 @@
+# cc
+import java.io.IOException;
+import java.util.List;
+
+public class Main {
+
+   public static void main(String[] args)throws ClassNotFoundException, Exception
+   {
+	   ElectricityBoard ebo = new ElectricityBoard();
+	   List<ElectricityBill> billList = ebo.generateBill("ElectricityBill.txt");
+	   ElectricityBill ebi = new ElectricityBill();
+	   ebo.addBill(billList);
+	   
+   }
+}
+          
